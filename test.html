@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Dashboard</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .dashboard-header h1 {
+            color: #2c3e50;
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .controls-section {
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .search-container {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .search-container input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .search-container input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .sort-controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .sort-btn {
+            padding: 10px 20px;
+            border: 2px solid #e9ecef;
+            background-color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .sort-btn:hover {
+            background-color: #f8f9fa;
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+        
+        .sort-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .page-size-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .page-size-container select {
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        
+        .page-size-container select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0;
+            background: white;
+        }
+        
+        .products-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .products-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+            transition: background-color 0.2s ease;
+        }
+        
+        /* Enhanced alternating row colors with hover effects */
+        .products-table .table-row-light {
+            background-color: #ffffff;
+        }
+        
+        .products-table .table-row-dark {
+            background-color: #f8f9fa;
+        }
+        
+        .products-table tr:hover td {
+            background-color: #e3f2fd !important;
+            transform: scale(1.01);
+        }
+        
+        /* Consistent styling across all columns with enhanced visual hierarchy */
+        .products-table .image-cell,
+        .products-table .title-cell,
+        .products-table .price-cell,
+        .products-table .description-cell,
+        .products-table .category-cell {
+            border-bottom: 1px solid #e9ecef;
+            padding: 16px 12px;
+        }
+        
+        /* Enhanced image styling within table cells */
+        .product-image {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            display: block;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .product-image:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .product-image.placeholder-image {
+            opacity: 0.7;
+            transform: none;
+        }
+        
+        .product-image.placeholder-image:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .product-image-placeholder {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: #6c757d;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        /* Enhanced cell-specific styling */
+        .image-cell {
+            width: 90px;
+            text-align: center;
+        }
+        
+        .title-cell {
+            font-weight: 600;
+            color: #2c3e50;
+            max-width: 250px;
+            font-size: 15px;
+        }
+        
+        .price-cell {
+            font-weight: 700;
+            color: #28a745;
+            white-space: nowrap;
+            font-size: 16px;
+        }
+        
+        .price-cell::before {
+            content: '$';
+            font-weight: 500;
+            color: #6c757d;
+        }
+        
+        .description-cell {
+            max-width: 350px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #495057;
+            font-size: 14px;
+        }
+        
+        .category-cell {
+            font-weight: 500;
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 20px;
+            padding: 6px 12px;
+            text-align: center;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .pagination-info {
+            font-size: 14px;
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        .pagination-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .pagination-btn {
+            padding: 8px 16px;
+            border: 2px solid #e9ecef;
+            background-color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            min-width: 40px;
+        }
+        
+        .pagination-btn:hover:not(:disabled) {
+            background-color: #f8f9fa;
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .pagination-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .pagination-ellipsis {
+            padding: 8px 12px;
+            color: #6c757d;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .error-message {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+        }
+        
+        .loading-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .loading-message::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e9ecef;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+            font-style: italic;
+            font-size: 18px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .dashboard-container {
+                margin: 0 10px;
+                padding: 20px;
+            }
+            
+            .dashboard-header h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .dashboard-container {
+                padding: 15px;
+            }
+            
+            .dashboard-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .controls-section {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+            
+            .search-container {
+                min-width: auto;
+            }
+            
+            .sort-controls {
+                justify-content: center;
+            }
+            
+            .sort-btn {
+                flex: 1;
+                min-width: 120px;
+            }
+            
+            .page-size-container {
+                justify-content: center;
+            }
+            
+            .products-table th,
+            .products-table td {
+                padding: 12px 8px;
+                font-size: 13px;
+            }
+            
+            .product-image,
+            .product-image-placeholder {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .image-cell {
+                width: 70px;
+            }
+            
+            .title-cell {
+                max-width: 150px;
+                font-size: 14px;
+            }
+            
+            .description-cell {
+                max-width: 200px;
+                font-size: 13px;
+            }
+            
+            .pagination-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .pagination-controls {
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .dashboard-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .sort-controls {
+                flex-direction: column;
+            }
+            
+            .sort-btn {
+                min-width: auto;
+            }
+            
+            .products-table th,
+            .products-table td {
+                padding: 8px 6px;
+                font-size: 12px;
+            }
+            
+            .product-image,
+            .product-image-placeholder {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .image-cell {
+                width: 60px;
+            }
+            
+            .title-cell {
+                max-width: 120px;
+                font-size: 13px;
+            }
+            
+            .description-cell {
+                max-width: 150px;
+                font-size: 12px;
+            }
+            
+            .category-cell {
+                font-size: 11px;
+                padding: 4px 8px;
+            }
+            
+            .pagination-btn {
+                padding: 6px 12px;
+                font-size: 13px;
+                min-width: 35px;
+            }
+        }
+        
+        /* Enhanced visual effects */
+        .dashboard-container {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Focus styles for accessibility */
+        .search-container input:focus,
+        .sort-btn:focus,
+        .pagination-btn:focus,
+        .page-size-container select:focus {
+            outline: 2px solid #667eea;
+            outline-offset: 2px;
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .dashboard-container {
+                box-shadow: none;
+                border: none;
+                padding: 20px;
+            }
+            
+            .controls-section,
+            .pagination-container {
+                display: none;
+            }
+            
+            .products-table {
+                font-size: 12px;
+            }
+            
+            .product-image {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>Product Dashboard</h1>
+        </div>
+        
+        <div id="error-container"></div>
+        
+        <div class="controls-section">
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Tìm kiếm sản phẩm theo tên...">
+            </div>
+            
+            <div class="sort-controls">
+                <button class="sort-btn" id="sort-price-btn">Sắp xếp theo giá</button>
+                <button class="sort-btn" id="sort-name-btn">Sắp xếp theo tên</button>
+            </div>
+            
+            <div class="page-size-container">
+                <label for="page-size-select">Hiển thị:</label>
+                <select id="page-size-select">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                </select>
+                <span>sản phẩm/trang</span>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <div id="loading-container" class="loading-message">
+                Đang tải dữ liệu...
+            </div>
+            
+            <table class="products-table" id="products-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Hình ảnh</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Giá</th>
+                        <th>Mô tả</th>
+                        <th>Danh mục</th>
+                    </tr>
+                </thead>
+                <tbody id="products-table-body">
+                </tbody>
+            </table>
+            
+            <div id="no-results" class="no-results" style="display: none;">
+                Không tìm thấy sản phẩm nào phù hợp với tìm kiếm của bạn.
+            </div>
+        </div>
+        
+        <div class="pagination-container" id="pagination-container" style="display: none;">
+            <div class="pagination-info" id="pagination-info"></div>
+            <div class="pagination-controls" id="pagination-controls"></div>
+        </div>
+    </div>
+    
+    <script src="main.js"></script>
+</body>
+</html>
